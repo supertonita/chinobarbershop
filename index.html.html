@@ -4,11 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BROTHER BARBERSHOP | </title>
- <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
 
- 
- <style>
+  <style>
     :root{
       --bg:#0b0d10; --card:#0f1215; --muted:#9aa2a8;
       --accent:#00b0ff; --accent-2:#00ff9f;
@@ -134,26 +135,45 @@
   </div>
 
   <script>
-     // --- PEGA TUS CREDENCIALES AQUÍ ---
+    // --- CONFIGURACIÓN DE FIREBASE ---
     const firebaseConfig = {
-  apiKey: "AIzaSyD_nyKvNf1nO7ivZncGZWcI4Ny-J9ACBTk",
-  authDomain: "brotherbarbershop-72776.firebaseapp.com",
-  projectId: "brotherbarbershop-72776",
-  storageBucket: "brotherbarbershop-72776.firebasestorage.app",
-  messagingSenderId: "905336909215",
-  appId: "1:905336909215:web:be04137cef98a69c7b21aa",
-  measurementId: "G-M48EGKP9P5"
-};
+      apiKey: "AIzaSyD_nyKvNf1nO7ivZncGZWcI4Ny-J9ACBTk",
+      authDomain: "brotherbarbershop-72776.firebaseapp.com",
+      projectId: "brotherbarbershop-72776",
+      storageBucket: "brotherbarbershop-72776.firebasestorage.app",
+      messagingSenderId: "905336909215",
+      appId: "1:905336909215:web:be04137cef98a69c7b21aa",
+      measurementId: "G-M48EGKP9P5"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const storage = firebase.storage();
 
     const CONFIG = { inicio: 8, fin: 19, intervalo: 45 };
-    let currentServices = JSON.parse(localStorage.getItem('bshop_services')) || [
-      {name: "Corte Clásico", price: 6, img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80"}
-    ];
-    let reservations = JSON.parse(localStorage.getItem('bshop_res')) || [];
+    
+    // Variables de Estado
+    let currentServices = [];
+    let reservations = [];
     let user = { name: "", nick: "", phone: "" };
     let selectedBarber = { name: "", phone: "" };
     let selectedService = null;
     let selectedTime = null;
+
+    // --- CARGAR DATOS DESDE FIREBASE AL INICIAR ---
+    database.ref('servicios').on('value', (snapshot) => {
+      currentServices = snapshot.val() || [
+        {name: "Corte Clásico", price: 6, img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80"}
+      ];
+      renderServices();
+      renderEditor();
+    });
+
+    database.ref('reservaciones').on('value', (snapshot) => {
+      reservations = snapshot.val() || [];
+      renderTimeSlots();
+    });
 
     function handleLogin() {
       const n = document.getElementById('u-name').value.trim();
@@ -171,8 +191,6 @@
 
       document.getElementById('auth-overlay').style.display = "none";
       document.getElementById('user-display').innerText = "Hola, " + user.nick;
-      renderServices();
-      renderEditor();
     }
 
     function renderServices() {
@@ -190,38 +208,66 @@
 
     function renderEditor() {
       const list = document.getElementById('editor-list');
+      if(!list) return;
       list.innerHTML = currentServices.map((s, i) => `
         <div class="edit-item">
-          <input type="text" value="${s.name}" onchange="currentServices[${i}].name=this.value" style="margin:0; font-size:12px">
-          <input type="number" value="${s.price}" onchange="currentServices[${i}].price=this.value" style="width:60px; margin:0; font-size:12px">
+          <input type="text" value="${s.name}" onchange="updateServiceName(${i}, this.value)" style="margin:0; font-size:12px">
+          <input type="number" value="${s.price}" onchange="updateServicePrice(${i}, this.value)" style="width:60px; margin:0; font-size:12px">
           <button class="btn-small" onclick="deleteService(${i})">X</button>
         </div>
       `).join('');
     }
 
+    function updateServiceName(i, val) { currentServices[i].name = val; }
+    function updateServicePrice(i, val) { currentServices[i].price = val; }
+
+    // --- FUNCIÓN CORREGIDA: SUBIR A STORAGE ---
     function addNewService() {
       const file = document.getElementById('new-img-file').files[0];
       const name = document.getElementById('new-img-name').value;
       const price = document.getElementById('new-img-price').value;
+      
       if(!file || !name) return alert("Sube una foto y ponle nombre.");
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        currentServices.push({ name, price, img: reader.result });
+      const btn = event.target;
+      btn.innerText = "SUBIENDO...";
+      btn.disabled = true;
+
+      // 1. Crear referencia en Storage
+      const storageRef = storage.ref('cortes/' + Date.now() + "_" + file.name);
+      
+      // 2. Subir archivo
+      storageRef.put(file).then((snapshot) => {
+        // 3. Obtener URL pública
+        return snapshot.ref.getDownloadURL();
+      }).then((url) => {
+        // 4. Agregar a la lista y guardar en Database
+        currentServices.push({ name, price, img: url });
         saveAll();
+        
+        // Limpiar campos
         document.getElementById('new-img-name').value = "";
         document.getElementById('new-img-price').value = "";
-      };
-      reader.readAsDataURL(file);
+        document.getElementById('new-img-file').value = "";
+        btn.innerText = "SUBIR FOTO REAL";
+        btn.disabled = false;
+        alert("¡Corte guardado en la nube!");
+      }).catch(err => {
+        alert("Error: " + err.message);
+        btn.disabled = false;
+      });
     }
 
     function deleteService(i) {
-      if(confirm("¿Borrar estilo?")) { currentServices.splice(i, 1); saveAll(); }
+      if(confirm("¿Borrar estilo?")) { 
+        currentServices.splice(i, 1); 
+        saveAll(); 
+      }
     }
 
     function saveAll() {
-      localStorage.setItem('bshop_services', JSON.stringify(currentServices));
-      renderServices(); renderEditor();
+      // Guardar en Firebase Database (esto actualiza a todos los clientes)
+      database.ref('servicios').set(currentServices);
     }
 
     function selectService(i) {
@@ -242,20 +288,25 @@
       const date = document.getElementById('res-date').value;
       if(!date || !selectedBarber.name) { grid.innerHTML = "<small>Elige fecha y barbero...</small>"; return; }
       grid.innerHTML = "";
+      
       let start = new Date(`${date}T08:00:00`);
       let end = new Date(`${date}T19:00:00`);
 
       while(start < end) {
         const timeStr = start.toTimeString().substring(0, 5);
         const isOccupied = reservations.some(r => r.date === date && r.time === timeStr && r.barber === selectedBarber.name);
+        
         const slot = document.createElement('div');
         slot.className = `time-slot ${isOccupied ? 'occupied' : ''}`;
         slot.innerText = timeStr;
-        if(!isOccupied) slot.onclick = () => {
-          selectedTime = timeStr;
-          document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-          slot.classList.add('selected');
-        };
+        
+        if(!isOccupied) {
+          slot.onclick = () => {
+            selectedTime = timeStr;
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            slot.classList.add('selected');
+          };
+        }
         grid.appendChild(slot);
         start.setMinutes(start.getMinutes() + CONFIG.intervalo);
       }
@@ -265,8 +316,9 @@
       const date = document.getElementById('res-date').value;
       if(!selectedService || !selectedTime) return alert("Falta elegir el corte o la hora.");
 
+      // Guardar reservación en Firebase
       reservations.push({ barber: selectedBarber.name, date, time: selectedTime });
-      localStorage.setItem('bshop_res', JSON.stringify(reservations));
+      database.ref('reservaciones').set(reservations);
 
       const msg = `*CITA CHINO B-SHOP*%0A%0A` +
                   `*Cliente:* ${user.name} (${user.nick})%0A` +
@@ -277,7 +329,6 @@
                   `*Notas:* ${document.getElementById('res-notes').value || 'Ninguna'}`;
       
       window.open(`https://wa.me/${selectedBarber.phone}?text=${msg}`, '_blank');
-      renderTimeSlots();
     }
 
     document.getElementById('res-date').min = new Date().toISOString().split("T")[0];
