@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BROTHER BARBERSHOP | CLIENTES PRO</title>
+  <title>BROTHER BARBERSHOP | CRM PRO</title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
@@ -48,7 +48,7 @@
     .agenda-card.confirmed { border-left-color: var(--accent-2); background: rgba(0, 255, 159, 0.05); }
 
     .check-btn { background: var(--accent-2); color: #000; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; margin-top: 10px; }
-    .promo-btn { background: #25d366; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+    .promo-btn { background: #25d366; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
     @media (max-width: 850px) { .main-content { grid-template-columns: 1fr; } }
   </style>
@@ -68,7 +68,7 @@
   <div class="wrap">
     <header>
       <div><h1 style="margin:0; font-size:20px;" class="accent-text">BROTHER BARBERSHOP</h1><small id="user-display"></small></div>
-      <button onclick="location.reload()" style="background:none; border:1px solid var(--muted); padding:8px; cursor:pointer;">Salir</button>
+      <button onclick="location.reload()" style="background:none; border:1px solid var(--muted); padding:8px; cursor:pointer; border-radius: 8px;">Cerrar Sesión</button>
     </header>
 
     <div class="main-content">
@@ -76,14 +76,14 @@
         <div id="admin-section">
           <h3>ADMIN: CORTES</h3>
           <input type="file" id="new-img-file" accept="image/*">
-          <input type="text" id="new-img-name" placeholder="Estilo">
+          <input type="text" id="new-img-name" placeholder="Nombre del Corte">
           <input type="number" id="new-img-price" placeholder="Precio $">
           <button class="btn" onclick="addNewService()">PUBLICAR</button>
           <div id="editor-list" style="margin-top:10px;"></div>
         </div>
 
         <div id="clients-section">
-          <h3 style="color:#ff9f00">MI BASE DE CLIENTES</h3>
+          <h3 id="clients-title" style="color:#ff9f00">CLIENTES FRECUENTES</h3>
           <div id="clients-list"></div>
         </div>
 
@@ -105,11 +105,11 @@
 
       <aside>
         <div class="auth-card" style="width:100%; max-width:none; position:sticky; top:15px;">
-          <h3 style="margin:0;">Agendá</h3>
+          <h3 style="margin:0;">Agendá tu Cita</h3>
           <input type="date" id="res-date" onchange="renderTimeSlots()">
           <div class="time-grid" id="time-grid"></div>
-          <textarea id="res-notes" rows="2" placeholder="Notas..."></textarea>
-          <button class="btn" onclick="checkAndSend()">WHATSAPP</button>
+          <textarea id="res-notes" rows="2" placeholder="Notas adicionales..."></textarea>
+          <button class="btn" onclick="checkAndSend()">CONFIRMAR WHATSAPP</button>
         </div>
       </aside>
     </div>
@@ -131,7 +131,6 @@
 
     let currentServices = [], allReservas = {}, user = {}, selectedBarber = {}, selectedService = null, selectedTime = null;
 
-    // --- ESCUCHA DE DATOS ---
     db.ref('cortes').on('value', snap => {
       currentServices = snap.val() ? Object.values(snap.val()) : [];
       renderServices();
@@ -140,21 +139,19 @@
 
     db.ref('reservas').on('value', snap => {
       allReservas = snap.val() || {};
-      if(user.role) renderAgenda();
+      if(user.role) {
+          renderAgenda();
+          renderClients(); // Se recalcula clientes basándose en reservas
+      }
       renderTimeSlots();
     });
 
-    db.ref('clientes').on('value', snap => {
-      if(user.role === 'admin') renderClients(snap.val());
-    });
-
-    // --- ACCESO Y REGISTRO ---
     function handleLogin() {
       const n = document.getElementById('u-name').value.trim();
       const p = document.getElementById('u-pass').value.trim();
       const nick = document.getElementById('u-nick').value.trim();
 
-      if(!n || !p) return alert("Nombre y Teléfono son obligatorios.");
+      if(!n || !p) return alert("Nombre y Teléfono son requeridos.");
 
       if(n.toLowerCase() === 'frank' && p === 'admin2026') {
         user = { name: 'Frank Reyes', nick: 'Admin', role: 'admin', phone: p };
@@ -163,23 +160,22 @@
         document.getElementById('barber-panel').style.display = 'block';
         document.getElementById('filter-barber').innerHTML = '<option value="Chino">Agenda: CHINO</option><option value="Francisco">Agenda: FRANCISCO</option>';
       } else if(n.toLowerCase() === 'chino' && p === 'chino123') {
-        user = { name: 'Chino', nick: 'Chino', role: 'barber' };
+        user = { name: 'Chino', nick: 'Chino', role: 'barber', phone: '50377543123' };
         document.getElementById('barber-panel').style.display = 'block';
+        document.getElementById('clients-section').style.display = 'block';
         document.getElementById('filter-barber').innerHTML = '<option value="Chino">Mi Agenda</option>';
       } else if(n.toLowerCase() === 'fran' && p === 'fran123') {
-        user = { name: 'Francisco', nick: 'Fran', role: 'barber' };
+        user = { name: 'Francisco', nick: 'Fran', role: 'barber', phone: '50375947426' };
         document.getElementById('barber-panel').style.display = 'block';
+        document.getElementById('clients-section').style.display = 'block';
         document.getElementById('filter-barber').innerHTML = '<option value="Francisco">Mi Agenda</option>';
       } else {
         user = { name: n, nick: nick || n, role: 'client', phone: p };
-        // Guardar cliente en base de datos si no es admin/barbero
-        db.ref('clientes/' + p).set({ nombre: n, apodo: nick || n, telefono: p, ultima_visita: new Date().toISOString() });
       }
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('user-display').innerText = "Hola, " + user.nick;
     }
 
-    // --- LOGICA AGENDA ---
     function renderTimeSlots() {
       const grid = document.getElementById('time-grid');
       const dateInput = document.getElementById('res-date').value;
@@ -210,8 +206,8 @@
         corte: selectedService.name, fecha: date, hora: selectedTime, status: 'pendiente', notas: document.getElementById('res-notes').value || 'Sin notas'
       };
       db.ref('reservas').push().set(r).then(() => {
-        const msg = `*CITA BROTHER BARBERSHOP*%0ABarbero: ${r.barbero}%0ACliente: ${r.cliente}%0ACorte: ${r.corte}%0AFecha: ${date}%0AHora: ${selectedTime}`;
-        window.open(`https://wa.me/${selectedBarber.phone}?text=${msg}`, '_blank');
+        const msg = `*CITA BROTHER BARBERSHOP*%0A%0A*Barbero:* ${r.barbero}%0A*Cliente:* ${r.cliente}%0A*Corte:* ${r.corte}%0A*Fecha:* ${date}%0A*Hora:* ${selectedTime}`;
+        window.location.href = `https://api.whatsapp.com/send?phone=${selectedBarber.phone}&text=${msg}`;
       });
     }
 
@@ -222,30 +218,45 @@
         <div class="agenda-card ${r.status === 'confirmada' ? 'confirmed' : ''}">
           <div style="display:flex; justify-content:space-between"><strong>${r.hora}</strong> <small>${r.fecha}</small></div>
           <div>${r.cliente} (${r.apodo}) - <span style="color:var(--accent)">${r.corte}</span></div>
-          <div style="font-size:11px; margin-top:5px; color:var(--muted)">Tel: ${r.phone || 'N/A'}</div>
+          <div style="font-size:11px; margin-top:5px; color:var(--muted)">Tel: ${r.phone}</div>
           ${r.status === 'pendiente' ? `<button class="check-btn" onclick="db.ref('reservas/${r.key}').update({status:'confirmada'})">Confirmar ✅</button>` : '<small style="color:var(--accent-2)">Confirmada</small>'}
         </div>`).join('') || "Sin citas.";
     }
 
-    // --- GESTIÓN DE CLIENTES (FIDELIZACIÓN) ---
-    function renderClients(data) {
-      if(!data) return;
+    function renderClients() {
       const list = document.getElementById('clients-list');
-      list.innerHTML = Object.values(data).map(c => `
+      const uniqueClients = {};
+
+      // Extraer clientes de todas las reservas
+      Object.values(allReservas).forEach(r => {
+        if (!uniqueClients[r.phone]) {
+          uniqueClients[r.phone] = { nombre: r.cliente, apodo: r.apodo, telefono: r.phone, barbero: r.barbero };
+        }
+      });
+
+      let clientsArray = Object.values(uniqueClients);
+
+      // Si no es Admin, filtrar para que el barbero solo vea "sus" clientes
+      if (user.role === 'barber') {
+        clientsArray = clientsArray.filter(c => c.barbero === user.name);
+        document.getElementById('clients-title').innerText = "MIS CLIENTES (Fidelización)";
+      }
+
+      list.innerHTML = clientsArray.map(c => `
         <div class="client-card" style="border-left-color:#ff9f00">
           <div style="display:flex; justify-content:space-between; align-items:center">
             <div><strong>${c.nombre}</strong> <small>(${c.apodo})</small><br><span style="font-size:12px;">Tel: ${c.telefono}</span></div>
             <button class="promo-btn" onclick="sendPromo('${c.telefono}', '${c.nombre}')">Enviar Promo 📲</button>
           </div>
-        </div>`).join('');
+        </div>`).join('') || "<small>No hay clientes registrados aún.</small>";
     }
 
     function sendPromo(tel, nombre) {
-      const msg = `¡Hola ${nombre}! Te saluda  *Brother Barbershop*. 💈 Ya es hora de un buen corte para mantener el estilo. ¿Te reservamos un espacio para esta semana?`;
-      window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+      const saludo = user.role === 'admin' ? 'Frank de *Brother Barbershop*' : `tu barbero *${user.name}*`;
+      const msg = `¡Qué onda ${nombre}! Te saluda ${saludo}. 💈 Ya hace falta el recorte para mantener el estilo al cien. ¿Te apartamos un cupo para esta semana?`;
+      window.location.href = `https://api.whatsapp.com/send?phone=${tel}&text=${msg}`;
     }
 
-    // --- RESTO DE FUNCIONES ---
     function setBarber(name, phone) { selectedBarber = { name, phone }; document.querySelectorAll('.barber-item').forEach(b => b.classList.remove('selected')); event.currentTarget.classList.add('selected'); renderTimeSlots(); }
     function selectService(i) { selectedService = currentServices[i]; document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected')); document.getElementById('scard-'+i).classList.add('selected'); }
     function addNewService() {
