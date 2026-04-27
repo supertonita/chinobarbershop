@@ -3,11 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BROTHER BARBERSHOP | </title>
-  
+  <title>BROTHER BARBERSHOP | Gestión</title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
 
   <style>
     :root{
@@ -19,33 +17,23 @@
     body{ margin:0; background: var(--bg); color:#e6eef3; display:flex; justify-content:center; padding:15px; }
     .wrap{ width:100%; max-width:1100px; }
 
-    /* --- LOGIN / REGISTRO MODAL --- */
-    #auth-overlay {
-      position: fixed; inset: 0; background: var(--bg); z-index: 10000;
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .auth-card {
-      background: var(--card); padding: 30px; border-radius: var(--radius);
-      border: 1px solid var(--glass); width: 100%; max-width: 400px; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-    }
+    #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { background: var(--card); padding: 30px; border-radius: var(--radius); border: 1px solid var(--glass); width: 100%; max-width: 400px; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
 
     header{ display:flex; justify-content: space-between; align-items:center; padding:20px; background: var(--glass); border-radius: var(--radius); margin-bottom: 25px; border: 1px solid var(--glass); }
     .accent-text { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
 
     .main-content { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
     
-    /* PANEL ADMIN FRANK */
     #admin-section { display: none; background: rgba(0, 176, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--accent); margin-bottom: 25px; }
-    .edit-item { display: flex; gap: 8px; margin-bottom: 8px; background: var(--glass); padding: 8px; border-radius: 8px; }
+    .edit-item { display: flex; gap: 8px; margin-bottom: 8px; background: var(--glass); padding: 8px; border-radius: 8px; align-items: center; }
 
-    /* SERVICIOS */
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-    .service-card { background: var(--card); overflow: hidden; border-radius: 12px; border: 1px solid var(--glass); cursor: pointer; text-align: center; }
-    .service-card img { width: 100%; height: 160px; object-fit: cover; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .service-card { background: var(--card); overflow: hidden; border-radius: 12px; border: 1px solid var(--glass); cursor: pointer; text-align: center; padding-bottom: 10px; }
+    .service-card img { width: 100%; height: 140px; object-fit: cover; background: #222; }
     .service-card.selected { border-color: var(--accent-2); box-shadow: 0 0 15px rgba(0,255,159,0.2); }
 
-    /* SELECTOR DE HORARIOS */
-    .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+    .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
     .time-slot { background: var(--glass); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px; border: 1px solid transparent; }
     .time-slot.selected { background: var(--accent); color: #000; font-weight: bold; }
     .time-slot.occupied { opacity: 0.2; cursor: not-allowed; background: #222; text-decoration: line-through; }
@@ -56,7 +44,7 @@
 
     input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass); background: rgba(255,255,255,0.05); color: white; margin-top: 8px; outline: none; }
     .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; background: linear-gradient(90deg, var(--accent), var(--accent-2)); cursor: pointer; margin-top: 15px; text-transform: uppercase; color: #000; }
-    .btn-small { background: #ff4444; color: white; padding: 5px 10px; border-radius: 5px; border: none; font-size: 10px; }
+    .btn-small { background: #ff4444; color: white; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; }
 
     @media (max-width: 850px) { .main-content { grid-template-columns: 1fr; } }
   </style>
@@ -69,16 +57,10 @@
       <h2 style="text-align:center; margin-top: 0;" class="accent-text">BROTHER BARBERSHOP</h2>
       
       <div id="login-fields">
-        <label style="font-size: 12px; color: var(--muted);">NOMBRE Y APELLIDO</label>
-        <input type="text" id="u-name" placeholder="Ej. Frank Reyes">
-        
-        <label style="font-size: 12px; color: var(--muted); margin-top: 10px; display: block;">APODO (¿CÓMO TE DECIMOS?)</label>
-        <input type="text" id="u-nick" placeholder="Ej. El Chino">
-        
-        <label style="font-size: 12px; color: var(--muted); margin-top: 10px; display: block;">TELÉFONO / PIN </label>
-        <input type="password" id="u-pass" placeholder="Tu celular ">
-        
-        <button class="btn" onclick="handleLogin()">INGRESAR A RESERVAR</button>
+        <input type="text" id="u-name" placeholder="Nombre y Apellido">
+        <input type="text" id="u-nick" placeholder="Apodo (Ej. El Chino)">
+        <input type="password" id="u-pass" placeholder="Teléfono / PIN">
+        <button class="btn" onclick="handleLogin()">INGRESAR</button>
       </div>
     </div>
   </div>
@@ -86,26 +68,25 @@
   <div class="wrap">
     <header>
       <div>
-        <h1 style="margin:0; font-size: 22px;"><span class="accent-text">BROTHER BARBERSHOP</span></h1>
+        <h1 style="margin:0; font-size: 20px;"><span class="accent-text">BROTHER BARBERSHOP</span></h1>
         <small id="user-display">Hola, invitado</small>
       </div>
-      <button onclick="location.reload()" style="background:none; border:1px solid var(--muted); color:var(--muted); padding:5px 10px; border-radius:5px; cursor:pointer; font-size: 11px;">Cerrar Sesión</button>
+      <button onclick="location.reload()" style="background:none; border:1px solid var(--muted); color:var(--muted); padding:5px 10px; border-radius:5px; cursor:pointer;">Salir</button>
     </header>
 
     <div class="main-content">
       <div class="left">
         <div id="admin-section">
-          <h3 style="margin:0 0 15px 0; color:var(--accent-2)">ADMIN: GESTIÓN DE CORTES</h3>
+          <h3 style="margin:0 0 15px 0; color:var(--accent-2)">ADMIN: NUEVO CORTE</h3>
           <div style="background: var(--glass); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
             <input type="file" id="new-img-file" accept="image/*">
             <div style="display:flex; gap:10px">
-              <input type="text" id="new-img-name" placeholder="Nombre del estilo">
+              <input type="text" id="new-img-name" placeholder="Nombre estilo">
               <input type="number" id="new-img-price" placeholder="Precio $">
             </div>
-            <button class="btn" style="background:#fff; height:40px; padding:0" onclick="addNewService()">SUBIR FOTO REAL</button>
+            <button class="btn" style="background:#fff;" onclick="addNewService()">SUBIR CORTE</button>
           </div>
           <div id="editor-list"></div>
-          <button class="btn" style="background:var(--accent); color:#000; height:40px; padding:0" onclick="saveAll()">GUARDAR CAMBIOS</button>
         </div>
 
         <h3>1. Seleccioná tu Barbero</h3>
@@ -115,64 +96,50 @@
         </div>
 
         <h3>2. Elegí el Estilo</h3>
-        <div class="services-grid" id="services-render"></div>
+        <div class="services-grid" id="services-render">
+          <p style="color:var(--muted)">Cargando estilos...</p>
+        </div>
       </div>
 
       <aside>
-        <div class="auth-card" style="position:sticky; top:15px">
+        <div class="auth-card" style="position:sticky; top:15px; width:100%; max-width:none;">
           <h3 style="margin:0">Agendá tu Cita</h3>
-          <label style="font-size:11px; color:var(--muted)">FECHA</label>
           <input type="date" id="res-date" onchange="renderTimeSlots()">
-          
-          <label style="font-size:11px; color:var(--muted); margin-top:15px; display:block">HORAS DISPONIBLES (45 MIN)</label>
           <div class="time-grid" id="time-grid"></div>
-
-          <textarea id="res-notes" rows="2" placeholder="¿Algún detalle extra para tu corte?"></textarea>
-          <button class="btn" onclick="checkAndSend()">CONFIRMAR EN WHATSAPP</button>
+          <textarea id="res-notes" rows="2" placeholder="Notas adicionales..."></textarea>
+          <button class="btn" onclick="checkAndSend()">WHATSAPP</button>
         </div>
       </aside>
     </div>
   </div>
 
   <script>
-    // --- CONFIGURACIÓN DE FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyD_nyKvNf1nO7ivZncGZWcI4Ny-J9ACBTk",
       authDomain: "brotherbarbershop-72776.firebaseapp.com",
       projectId: "brotherbarbershop-72776",
       storageBucket: "brotherbarbershop-72776.firebasestorage.app",
+      databaseURL: "https://brotherbarbershop-72776-default-rtdb.firebaseio.com",
       messagingSenderId: "905336909215",
-      appId: "1:905336909215:web:be04137cef98a69c7b21aa",
-      measurementId: "G-M48EGKP9P5"
+      appId: "1:905336909215:web:be04137cef98a69c7b21aa"
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const storage = firebase.storage();
+    const db = firebase.database();
 
     const CONFIG = { inicio: 8, fin: 19, intervalo: 45 };
-    
-    // Variables de Estado
     let currentServices = [];
-    let reservations = [];
     let user = { name: "", nick: "", phone: "" };
     let selectedBarber = { name: "", phone: "" };
     let selectedService = null;
     let selectedTime = null;
 
-    // --- CARGAR DATOS DESDE FIREBASE AL INICIAR ---
-    database.ref('servicios').on('value', (snapshot) => {
-      currentServices = snapshot.val() || [
-        {name: "Corte Clásico", price: 6, img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80"}
-      ];
+    // Escuchar cambios en la base de datos (TIEMPO REAL)
+    db.ref('cortes').on('value', (snapshot) => {
+      const data = snapshot.val();
+      currentServices = data ? Object.values(data) : [];
       renderServices();
-      renderEditor();
-    });
-
-    database.ref('reservaciones').on('value', (snapshot) => {
-      reservations = snapshot.val() || [];
-      renderTimeSlots();
+      if(user.nick === "ADMIN") renderEditor(data);
     });
 
     function handleLogin() {
@@ -180,7 +147,7 @@
       const nick = document.getElementById('u-nick').value.trim();
       const p = document.getElementById('u-pass').value.trim();
 
-      if(!n || !p) return alert("Parce, el nombre y el teléfono/PIN son obligatorios.");
+      if(!n || !p) return alert("Nombre y teléfono requeridos.");
 
       if(n.toLowerCase() === "frank" && p === "admin2026") {
         document.getElementById('admin-section').style.display = "block";
@@ -195,9 +162,13 @@
 
     function renderServices() {
       const grid = document.getElementById('services-render');
+      if(currentServices.length === 0) {
+        grid.innerHTML = "<p>No hay cortes publicados.</p>";
+        return;
+      }
       grid.innerHTML = currentServices.map((s, i) => `
         <div class="service-card" id="scard-${i}" onclick="selectService(${i})">
-          <img src="${s.img}">
+          <img src="${s.img || ''}">
           <div style="padding:10px">
             <strong>${s.name}</strong><br>
             <span style="color:var(--accent-2); font-weight:bold">$${s.price}.00</span>
@@ -206,68 +177,46 @@
       `).join('');
     }
 
-    function renderEditor() {
+    function renderEditor(data) {
       const list = document.getElementById('editor-list');
-      if(!list) return;
-      list.innerHTML = currentServices.map((s, i) => `
+      if(!data) { list.innerHTML = ""; return; }
+      list.innerHTML = Object.keys(data).map(key => `
         <div class="edit-item">
-          <input type="text" value="${s.name}" onchange="updateServiceName(${i}, this.value)" style="margin:0; font-size:12px">
-          <input type="number" value="${s.price}" onchange="updateServicePrice(${i}, this.value)" style="width:60px; margin:0; font-size:12px">
-          <button class="btn-small" onclick="deleteService(${i})">X</button>
+          <span style="font-size:12px; flex:1; overflow:hidden">${data[key].name}</span>
+          <button class="btn-small" onclick="deleteService('${key}')">Eliminar</button>
         </div>
       `).join('');
     }
 
-    function updateServiceName(i, val) { currentServices[i].name = val; }
-    function updateServicePrice(i, val) { currentServices[i].price = val; }
-
-    // --- FUNCIÓN CORREGIDA: SUBIR A STORAGE ---
     function addNewService() {
       const file = document.getElementById('new-img-file').files[0];
       const name = document.getElementById('new-img-name').value;
       const price = document.getElementById('new-img-price').value;
-      
-      if(!file || !name) return alert("Sube una foto y ponle nombre.");
 
-      const btn = event.target;
-      btn.innerText = "SUBIENDO...";
-      btn.disabled = true;
+      if(!file || !name || !price) return alert("Completa todos los campos y la foto.");
 
-      // 1. Crear referencia en Storage
-      const storageRef = storage.ref('cortes/' + Date.now() + "_" + file.name);
-      
-      // 2. Subir archivo
-      storageRef.put(file).then((snapshot) => {
-        // 3. Obtener URL pública
-        return snapshot.ref.getDownloadURL();
-      }).then((url) => {
-        // 4. Agregar a la lista y guardar en Database
-        currentServices.push({ name, price, img: url });
-        saveAll();
-        
-        // Limpiar campos
-        document.getElementById('new-img-name').value = "";
-        document.getElementById('new-img-price').value = "";
-        document.getElementById('new-img-file').value = "";
-        btn.innerText = "SUBIR FOTO REAL";
-        btn.disabled = false;
-        alert("¡Corte guardado en la nube!");
-      }).catch(err => {
-        alert("Error: " + err.message);
-        btn.disabled = false;
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newPostKey = db.ref().child('cortes').push().key;
+        db.ref('cortes/' + newPostKey).set({
+          id: newPostKey,
+          name: name,
+          price: price,
+          img: reader.result // Base64
+        }).then(() => {
+          alert("¡Corte subido con éxito!");
+          document.getElementById('new-img-name').value = "";
+          document.getElementById('new-img-price').value = "";
+          document.getElementById('new-img-file').value = "";
+        });
+      };
+      reader.readAsDataURL(file);
     }
 
-    function deleteService(i) {
-      if(confirm("¿Borrar estilo?")) { 
-        currentServices.splice(i, 1); 
-        saveAll(); 
+    function deleteService(key) {
+      if(confirm("¿Seguro que quieres eliminar este estilo?")) {
+        db.ref('cortes/' + key).remove();
       }
-    }
-
-    function saveAll() {
-      // Guardar en Firebase Database (esto actualiza a todos los clientes)
-      database.ref('servicios').set(currentServices);
     }
 
     function selectService(i) {
@@ -287,26 +236,21 @@
       const grid = document.getElementById('time-grid');
       const date = document.getElementById('res-date').value;
       if(!date || !selectedBarber.name) { grid.innerHTML = "<small>Elige fecha y barbero...</small>"; return; }
-      grid.innerHTML = "";
       
+      grid.innerHTML = "";
       let start = new Date(`${date}T08:00:00`);
       let end = new Date(`${date}T19:00:00`);
 
       while(start < end) {
         const timeStr = start.toTimeString().substring(0, 5);
-        const isOccupied = reservations.some(r => r.date === date && r.time === timeStr && r.barber === selectedBarber.name);
-        
         const slot = document.createElement('div');
-        slot.className = `time-slot ${isOccupied ? 'occupied' : ''}`;
+        slot.className = `time-slot`;
         slot.innerText = timeStr;
-        
-        if(!isOccupied) {
-          slot.onclick = () => {
-            selectedTime = timeStr;
-            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-            slot.classList.add('selected');
-          };
-        }
+        slot.onclick = () => {
+          selectedTime = timeStr;
+          document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+          slot.classList.add('selected');
+        };
         grid.appendChild(slot);
         start.setMinutes(start.getMinutes() + CONFIG.intervalo);
       }
@@ -316,14 +260,11 @@
       const date = document.getElementById('res-date').value;
       if(!selectedService || !selectedTime) return alert("Falta elegir el corte o la hora.");
 
-      // Guardar reservación en Firebase
-      reservations.push({ barber: selectedBarber.name, date, time: selectedTime });
-      database.ref('reservaciones').set(reservations);
-
-      const msg = `*CITA CHINO B-SHOP*%0A%0A` +
+      const msg = `*CITA BROTHER BARBERSHOP*%0A%0A` +
                   `*Cliente:* ${user.name} (${user.nick})%0A` +
                   `*Barbero:* ${selectedBarber.name}%0A` +
                   `*Corte:* ${selectedService.name}%0A` +
+                  `*Precio:* $${selectedService.price}.00%0A` +
                   `*Día:* ${date}%0A` +
                   `*Hora:* ${selectedTime}%0A` +
                   `*Notas:* ${document.getElementById('res-notes').value || 'Ninguna'}`;
