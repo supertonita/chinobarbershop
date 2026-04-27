@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BROTHER BARBERSHOP | SISTEMA PRO</title>
+  <title>BROTHER BARBERSHOP | </title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
@@ -17,7 +17,7 @@
     body{ margin:0; background: var(--bg); color:#e6eef3; display:flex; justify-content:center; padding:15px; }
     .wrap{ width:100%; max-width:1100px; }
 
-    /* --- LOGIN MODAL --- */
+    /* LOGIN */
     #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .auth-card { background: var(--card); padding: 30px; border-radius: var(--radius); border: 1px solid var(--glass); width: 100%; max-width: 400px; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
 
@@ -26,7 +26,6 @@
 
     .main-content { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
     
-    /* PANELES DE CONTROL */
     #admin-section, #barber-panel { display: none; background: rgba(0, 176, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--accent); margin-bottom: 25px; }
     #barber-panel { border-color: var(--accent-2); border-style: solid; background: rgba(0, 255, 159, 0.02); }
 
@@ -36,8 +35,8 @@
     .service-card.selected { border-color: var(--accent-2); box-shadow: 0 0 15px rgba(0,255,159,0.2); }
 
     .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    .time-slot { background: var(--glass); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px; }
-    .time-slot.selected { background: var(--accent); color: #000; font-weight: bold; }
+    .time-slot { background: var(--glass); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px; font-weight: bold; }
+    .time-slot.selected { background: var(--accent); color: #000; }
 
     .barber-list { display: flex; gap: 10px; margin-bottom: 20px; }
     .barber-item { flex: 1; background: var(--card); padding: 12px; border-radius: 10px; border: 1px solid var(--glass); cursor: pointer; text-align: center; font-weight: bold; }
@@ -46,7 +45,7 @@
     input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass); background: rgba(255,255,255,0.05); color: white; margin-top: 8px; outline: none; }
     .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; background: linear-gradient(90deg, var(--accent), var(--accent-2)); cursor: pointer; margin-top: 15px; color: #000; }
     
-    .agenda-card { background: var(--card); padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent-2); margin-bottom: 10px; border-top: 1px solid var(--glass); }
+    .agenda-card { background: var(--card); padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent-2); margin-bottom: 10px; }
 
     @media (max-width: 850px) { .main-content { grid-template-columns: 1fr; } }
   </style>
@@ -56,32 +55,27 @@
   <div id="auth-overlay">
     <div class="auth-card">
       <h2 style="text-align:center; margin-bottom:5px;">BROTHER BARBERSHOP</h2>
-      <p style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:20px;">Ingresa tus datos o tu PIN de acceso</p>
-      <input type="text" id="u-name" placeholder="Nombre completo">
+      <input type="text" id="u-name" placeholder="Tu Nombre">
       <input type="text" id="u-nick" placeholder="Tu Apodo">
-      <input type="password" id="u-pass" placeholder="Teléfono o PIN">
+      <input type="password" id="u-pass" placeholder="PIN o Celular">
       <button class="btn" onclick="handleLogin()">INGRESAR AL SISTEMA</button>
     </div>
   </div>
 
   <div class="wrap">
     <header>
-      <div><h1 style="margin:0; font-size:20px;" class="accent-text">BROTHER BARBERSHOP</h1><small id="user-display">Hola, invitado</small></div>
+      <div><h1 style="margin:0; font-size:20px;" class="accent-text">BROTHER BARBERSHOP</h1><small id="user-display"></small></div>
       <button onclick="location.reload()" style="background:none; border:1px solid var(--muted); color:var(--muted); padding:8px; border-radius:8px; cursor:pointer;">Cerrar Sesión</button>
     </header>
 
     <div class="main-content">
       <div class="left">
-        
         <div id="admin-section">
-          <h3 style="color:var(--accent); margin-top:0;">ADMIN: GESTIÓN DE CORTES</h3>
-          <div style="background: var(--glass); padding: 15px; border-radius: 12px;">
-            <label style="font-size:11px;">FOTO DEL CORTE REAL</label>
-            <input type="file" id="new-img-file" accept="image/*">
-            <input type="text" id="new-img-name" placeholder="Nombre del estilo (ej. Fade Pro)">
-            <input type="number" id="new-img-price" placeholder="Precio en $">
-            <button class="btn" style="background:#fff;" onclick="addNewService()">SUBIR Y PUBLICAR</button>
-          </div>
+          <h3>GESTOR DE ESTILOS (ADMIN)</h3>
+          <input type="file" id="new-img-file" accept="image/*">
+          <input type="text" id="new-img-name" placeholder="Nombre del Corte">
+          <input type="number" id="new-img-price" placeholder="Precio $">
+          <button class="btn" onclick="addNewService()">PUBLICAR CORTE</button>
           <div id="editor-list" style="margin-top:15px; display: grid; gap:5px;"></div>
         </div>
 
@@ -91,7 +85,7 @@
           <div id="agenda-list" style="margin-top:15px;"></div>
         </div>
 
-        <h3>1. Seleccioná tu Barbero</h3>
+        <h3>1. Elegí tu Barbero</h3>
         <div class="barber-list">
           <div class="barber-item" id="b-chino" onclick="setBarber('Chino', '50377543123')">CHINO</div>
           <div class="barber-item" id="b-fran" onclick="setBarber('Francisco', '50375947426')">FRANCISCO</div>
@@ -104,13 +98,9 @@
       <aside>
         <div class="auth-card" style="width:100%; max-width:none; position:sticky; top:15px;">
           <h3 style="margin-top:0;">Agendá tu Cita</h3>
-          <label style="font-size:11px; color:var(--muted)">FECHA</label>
           <input type="date" id="res-date" onchange="renderTimeSlots()">
-          
-          <label style="font-size:11px; color:var(--muted); margin-top:15px; display:block;">HORAS DISPONIBLES</label>
           <div class="time-grid" id="time-grid"></div>
-
-          <textarea id="res-notes" rows="2" placeholder="¿Alguna instrucción especial?"></textarea>
+          <textarea id="res-notes" rows="2" placeholder="Notas adicionales..."></textarea>
           <button class="btn" onclick="checkAndSend()">CONFIRMAR EN WHATSAPP</button>
         </div>
       </aside>
@@ -118,7 +108,6 @@
   </div>
 
   <script>
-    // CONFIGURACIÓN FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyD_nyKvNf1nO7ivZncGZWcI4Ny-J9ACBTk",
       authDomain: "brotherbarbershop-72776.firebaseapp.com",
@@ -134,26 +123,24 @@
 
     let currentServices = [], allReservas = [], user = {}, selectedBarber = {}, selectedService = null, selectedTime = null;
 
-    // --- SINCRONIZACIÓN EN TIEMPO REAL ---
+    // --- SINCRONIZACIÓN TIEMPO REAL ---
     db.ref('cortes').on('value', snap => {
-      const data = snap.val();
-      currentServices = data ? Object.values(data) : [];
+      currentServices = snap.val() ? Object.values(snap.val()) : [];
       renderServices();
-      if(user.role === 'admin') renderEditor(data);
+      if(user.role === 'admin') renderEditor(snap.val());
     });
 
     db.ref('reservas').on('value', snap => {
       allReservas = snap.val() ? Object.values(snap.val()) : [];
       if(user.role) renderAgenda();
+      renderTimeSlots(); // Recalcular horas disponibles si alguien reserva
     });
 
-    // --- LOGIN ---
+    // --- ACCESO ---
     function handleLogin() {
       const n = document.getElementById('u-name').value.trim().toLowerCase();
       const p = document.getElementById('u-pass').value.trim();
       const nick = document.getElementById('u-nick').value.trim();
-
-      if(!n || !p) return alert("Ingresa tu nombre y PIN");
 
       if(n === 'frank' && p === 'admin2026') {
         user = { name: 'Frank Reyes', nick: 'Admin Frank', role: 'admin' };
@@ -161,82 +148,83 @@
         document.getElementById('barber-panel').style.display = 'block';
         document.getElementById('filter-barber').innerHTML = '<option value="Chino">Agenda: CHINO</option><option value="Francisco">Agenda: FRANCISCO</option>';
       } else if(n === 'chino' && p === 'chino123') {
-        user = { name: 'Chino', nick: 'Barbero Chino', role: 'barber' };
+        user = { name: 'Chino', nick: 'Chino (Barbero)', role: 'barber' };
         document.getElementById('barber-panel').style.display = 'block';
-        document.getElementById('filter-barber').innerHTML = '<option value="Chino">Mi Agenda (Chino)</option>';
+        document.getElementById('filter-barber').innerHTML = '<option value="Chino">Mi Agenda</option>';
       } else if(n === 'fran' && p === 'fran123') {
-        user = { name: 'Francisco', nick: 'Barbero Fran', role: 'barber' };
+        user = { name: 'Francisco', nick: 'Fran (Barbero)', role: 'barber' };
         document.getElementById('barber-panel').style.display = 'block';
-        document.getElementById('filter-barber').innerHTML = '<option value="Francisco">Mi Agenda (Francisco)</option>';
+        document.getElementById('filter-barber').innerHTML = '<option value="Francisco">Mi Agenda</option>';
       } else {
         user = { name: n, nick: nick || n, role: 'client' };
       }
-
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('user-display').innerText = "Hola, " + user.nick;
     }
 
-    // --- GESTIÓN DE CORTES ---
-    function addNewService() {
-      const file = document.getElementById('new-img-file').files[0];
-      const name = document.getElementById('new-img-name').value;
-      const price = document.getElementById('new-img-price').value;
-      if(!file || !name || !price) return alert("Completa todos los campos");
+    // --- LOGICA DE HORARIOS (MEJORADA) ---
+    function renderTimeSlots() {
+      const grid = document.getElementById('time-grid');
+      const dateInput = document.getElementById('res-date').value;
+      if(!dateInput || !selectedBarber.name) {
+        grid.innerHTML = "<small style='color:var(--muted)'>Seleccioná fecha y barbero</small>";
+        return;
+      }
+      
+      grid.innerHTML = "";
+      const ahora = new Date();
+      const esHoy = dateInput === ahora.toISOString().split("T")[0];
+      const diaSemana = new Date(dateInput + "T00:00:00").getDay();
+      
+      // Filtramos las horas que ya están ocupadas para este barbero hoy
+      const horasOcupadas = allReservas
+        .filter(r => r.barbero === selectedBarber.name && r.fecha === dateInput)
+        .map(r => r.hora);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const key = db.ref('cortes').push().key;
-        db.ref('cortes/'+key).set({ id:key, name, price, img: reader.result })
-          .then(() => alert("Corte publicado!"));
+      // Horario: Lun-Sáb 7am-4pm | Dom 7am-12md
+      let horaFin = (diaSemana === 0) ? 12 : 16;
+      let tempDate = new Date(`${dateInput}T07:00:00`);
+      let endCierre = new Date(`${dateInput}T${horaFin}:00:00`);
+
+      while(tempDate < endCierre) {
+        const t = tempDate.toTimeString().substring(0,5);
+        
+        // Solo mostramos si no ha pasado hoy y si no está ocupada
+        if ((!esHoy || tempDate > ahora) && !horasOcupadas.includes(t)) {
+          const slot = document.createElement('div');
+          slot.className = 'time-slot';
+          slot.innerText = t;
+          slot.onclick = () => {
+            selectedTime = t;
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            slot.classList.add('selected');
+          };
+          grid.appendChild(slot);
+        }
+        tempDate.setMinutes(tempDate.getMinutes() + 45);
+      }
+      
+      if(grid.innerHTML === "") grid.innerHTML = "<small style='color:red'>Sin horarios disponibles.</small>";
+    }
+
+    // --- PROCESAR RESERVA ---
+    function checkAndSend() {
+      const date = document.getElementById('res-date').value;
+      if(!selectedService || !selectedTime || !selectedBarber.name) return alert("Faltan datos");
+      
+      const r = {
+        barbero: selectedBarber.name, cliente: user.name, apodo: user.nick,
+        corte: selectedService.name, fecha: date, hora: selectedTime,
+        notas: document.getElementById('res-notes').value || 'Sin notas'
       };
-      reader.readAsDataURL(file);
+
+      db.ref('reservas').push().set(r).then(() => {
+        const msg = `*CITA BROTHER BARBERSHOP*%0A%0A*Barbero:* ${r.barbero}%0A*Cliente:* ${r.cliente} (${r.apodo})%0A*Corte:* ${r.corte}%0A*Fecha:* ${date}%0A*Hora:* ${selectedTime}`;
+        window.open(`https://wa.me/${selectedBarber.phone}?text=${msg}`, '_blank');
+      });
     }
 
-    function renderServices() {
-      document.getElementById('services-render').innerHTML = currentServices.map((s, i) => `
-        <div class="service-card" id="scard-${i}" onclick="selectService(${i})">
-          <img src="${s.img || ''}">
-          <div style="padding:10px"><strong>${s.name}</strong><br><span style="color:var(--accent-2); font-weight:bold">$${s.price}.00</span></div>
-        </div>`).join('');
-    }
-
-    function renderEditor(data) {
-      const list = document.getElementById('editor-list');
-      if(!data) return list.innerHTML = "";
-      list.innerHTML = Object.keys(data).map(k => `
-        <div style="display:flex; justify-content:space-between; background:var(--glass); padding:8px; border-radius:8px; align-items:center;">
-          <small>${data[k].name}</small>
-          <button onclick="db.ref('cortes/${k}').remove()" style="background:#ff4444; color:white; border:none; padding:4px 8px; border-radius:5px; cursor:pointer;">Borrar</button>
-        </div>`).join('');
-    }
-
-    // --- AGENDA ---
-    function renderAgenda() {
-      const bFilter = document.getElementById('filter-barber').value;
-      const hoy = new Date().toISOString().split("T")[0];
-      
-      const filtered = allReservas.filter(r => r.barbero === bFilter && r.fecha >= hoy)
-                       .sort((a,b) => (a.fecha+a.hora).localeCompare(b.fecha+b.hora));
-      
-      document.getElementById('agenda-list').innerHTML = filtered.map(r => `
-        <div class="agenda-card">
-          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <strong style="color:var(--accent-2)">${r.hora}</strong> 
-            <small style="color:var(--muted)">${r.fecha}</small>
-          </div>
-          <div style="font-size:14px;"><b>${r.cliente}</b> <span style="font-size:12px; color:var(--muted)">(${r.apodo})</span></div>
-          <div style="font-size:13px; margin-top:3px; color:var(--accent)">Corte: ${r.corte}</div>
-          ${r.notas !== 'Sin notas' ? `<div style="font-size:11px; color:#aaa; font-style:italic; margin-top:5px;">"${r.notas}"</div>` : ''}
-        </div>`).join('') || "<p style='color:var(--muted); font-size:12px;'>No hay citas agendadas.</p>";
-    }
-
-    // --- RESERVAS ---
-    function selectService(i) {
-      selectedService = currentServices[i];
-      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-      document.getElementById('scard-'+i).classList.add('selected');
-    }
-
+    // --- FUNCIONES EXTRA ---
     function setBarber(name, phone) {
       selectedBarber = { name, phone };
       document.querySelectorAll('.barber-item').forEach(b => b.classList.remove('selected'));
@@ -244,47 +232,49 @@
       renderTimeSlots();
     }
 
-    function renderTimeSlots() {
-      const grid = document.getElementById('time-grid');
-      const date = document.getElementById('res-date').value;
-      if(!date || !selectedBarber.name) { grid.innerHTML = "<small>Elige fecha y barbero...</small>"; return; }
-      
-      grid.innerHTML = "";
-      let start = new Date(`${date}T08:00:00`);
-      for(let i=0; i<14; i++){
-        const t = start.toTimeString().substring(0,5);
-        const slot = document.createElement('div');
-        slot.className = 'time-slot';
-        slot.innerText = t;
-        slot.onclick = () => {
-          selectedTime = t;
-          document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-          slot.classList.add('selected');
-        };
-        grid.appendChild(slot);
-        start.setMinutes(start.getMinutes() + 45);
-      }
+    function selectService(i) {
+      selectedService = currentServices[i];
+      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('scard-'+i).classList.add('selected');
     }
 
-    function checkAndSend() {
-      const date = document.getElementById('res-date').value;
-      if(!selectedService || !selectedTime || !selectedBarber.name) return alert("Completa: Barbero, Corte y Hora.");
-      
-      // Guardar en Firebase
-      const reservaData = {
-        barbero: selectedBarber.name,
-        cliente: user.name,
-        apodo: user.nick,
-        corte: selectedService.name,
-        fecha: date,
-        hora: selectedTime,
-        notas: document.getElementById('res-notes').value || 'Sin notas'
+    function addNewService() {
+      const f = document.getElementById('new-img-file').files[0], n = document.getElementById('new-img-name').value, p = document.getElementById('new-img-price').value;
+      if(!f || !n || !p) return alert("Faltan datos del corte");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const k = db.ref('cortes').push().key;
+        db.ref('cortes/'+k).set({ id:k, name:n, price:p, img: reader.result }).then(()=>alert("¡Corte subido!"));
       };
+      reader.readAsDataURL(f);
+    }
 
-      db.ref('reservas').push().set(reservaData).then(() => {
-        const msg = `*CITA BROTHER BARBERSHOP*%0A%0A*Cliente:* ${user.name}%0A*Barbero:* ${selectedBarber.name}%0A*Corte:* ${selectedService.name}%0A*Fecha:* ${date}%0A*Hora:* ${selectedTime}`;
-        window.open(`https://wa.me/${selectedBarber.phone}?text=${msg}`, '_blank');
-      });
+    function renderServices() {
+      document.getElementById('services-render').innerHTML = currentServices.map((s, i) => `
+        <div class="service-card" id="scard-${i}" onclick="selectService(${i})">
+          <img src="${s.img}">
+          <div style="padding:10px"><strong>${s.name}</strong><br><span style="color:var(--accent-2)">$${s.price}.00</span></div>
+        </div>`).join('');
+    }
+
+    function renderAgenda() {
+      const filter = document.getElementById('filter-barber').value;
+      const hoy = new Date().toISOString().split("T")[0];
+      const filtered = allReservas.filter(r => r.barbero === filter && r.fecha >= hoy).sort((a,b) => (a.fecha+a.hora).localeCompare(b.fecha+b.hora));
+      document.getElementById('agenda-list').innerHTML = filtered.map(r => `
+        <div class="agenda-card">
+          <div style="display:flex; justify-content:space-between"><strong>${r.hora}</strong> <small>${r.fecha}</small></div>
+          <div>${r.cliente} <span style="color:var(--muted)">(${r.apodo})</span></div>
+          <div style="font-size:12px; color:var(--accent)">Corte: ${r.corte}</div>
+        </div>`).join('') || "Sin citas hoy.";
+    }
+
+    function renderEditor(data) {
+      document.getElementById('editor-list').innerHTML = Object.keys(data || {}).map(k => `
+        <div style="display:flex; justify-content:space-between; background:var(--glass); padding:8px; border-radius:8px; align-items:center;">
+          <small>${data[k].name}</small>
+          <button onclick="db.ref('cortes/${k}').remove()" style="background:#ff4444; color:white; border:none; padding:4px 8px; border-radius:5px; cursor:pointer">X</button>
+        </div>`).join('');
     }
 
     document.getElementById('res-date').min = new Date().toISOString().split("T")[0];
