@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BROTHER BARBERSHOP |</title>
+  <title>BROTHER BARBERSHOP | Gestión</title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
@@ -23,7 +23,6 @@
     .time-slot { background: white; border: 1px solid #ddd; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
     .time-slot.active { background: var(--accent); color: white; border-color: var(--accent); }
     
-    /* MEJORA EN SERVICIOS */
     .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
     .service-card { background: white; border-radius: 12px; border: 1px solid #ddd; overflow: hidden; cursor: pointer; text-align: center; position: relative; }
     .service-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
@@ -31,7 +30,6 @@
     .service-card.selected { border: 4px solid var(--accent); transform: scale(1.02); }
     .zoom-hint { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; padding: 4px; border-radius: 50%; font-size: 12px; }
 
-    /* MODAL PARA VER IMAGEN COMPLETA */
     #modal-view { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
     #modal-view img { max-width: 100%; max-height: 70vh; border-radius: 10px; border: 3px solid white; }
     #modal-view h2 { color: white; margin: 15px 0; }
@@ -59,7 +57,7 @@
       <h2 style="margin-bottom:20px;">BROTHER BARBERSHOP</h2>
       <input type="text" id="u-name" placeholder="Tu Nombre">
       <input type="text" id="u-phone" placeholder="WhatsApp (Clientes)">
-      <input type="password" id="u-pass" placeholder="">
+      <input type="password" id="u-pass" placeholder="Contraseña (Solo Barberos)">
       <button onclick="handleLogin()" style="width:100%; padding:15px; margin-top:15px; background:var(--dark); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACCEDER</button>
     </div>
   </div>
@@ -121,10 +119,10 @@
         </div>
       </div>
       <div class="card">
-        <h3>Subir Nuevo Corte (Desde Celular)</h3>
+        <h3>Subir Nuevo Corte</h3>
         <input type="text" id="new-name" placeholder="Nombre del estilo">
         <input type="file" id="new-file" accept="image/*">
-        <button class="nav-btn" style="width:100%; margin-top:10px; background:green; color:white;" onclick="uploadCorte()">GUARDAR Y SUBIR</button>
+        <button class="nav-btn" id="btn-upload" style="width:100%; margin-top:10px; background:green; color:white;" onclick="uploadCorte()">GUARDAR Y SUBIR</button>
       </div>
       <div class="card"><h3>Gestionar Cortes</h3><div id="admin-list-cortes"></div></div>
     </div>
@@ -181,7 +179,6 @@
       return (h % 12 || 12) + ':' + m + (h >= 12 ? ' PM' : ' AM');
     }
 
-    // --- FUNCIONES DEL MODAL ---
     function openPreview(id, name, img) {
         const modal = document.getElementById('modal-view');
         document.getElementById('modal-img').src = img;
@@ -200,20 +197,39 @@
     function selectService(id, name, img) {
         selectedService = {id, name, img};
         document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById('svc-' + id).classList.add('selected');
+        const el = document.getElementById('svc-' + id);
+        if(el) el.classList.add('selected');
     }
 
+    // CORRECCIÓN CLAVE AQUÍ:
     async function uploadCorte() {
-      const file = document.getElementById('new-file').files[0];
-      const name = document.getElementById('new-name').value;
+      const fileInput = document.getElementById('new-file');
+      const file = fileInput.files[0];
+      const name = document.getElementById('new-name').value.trim();
+      const btn = document.getElementById('btn-upload');
+
       if(!file || !name) return alert("Sube foto y pon nombre");
       
-      const ref = storage.ref('cortes/' + Date.now() + "_" + file.name);
-      const snap = await ref.put(file);
-      const url = await snap.ref.getDownloadURL();
-      db.ref('cortes').push().set({ name, img: url });
-      alert("¡Estilo guardado!");
-      document.getElementById('new-name').value = "";
+      btn.disabled = true;
+      btn.innerText = "Subiendo...";
+
+      try {
+        const ref = storage.ref('cortes/' + Date.now() + "_" + file.name);
+        const snap = await ref.put(file);
+        const url = await snap.ref.getDownloadURL();
+        
+        await db.ref('cortes').push({ name: name, img: url });
+        
+        alert("¡Estilo guardado!");
+        document.getElementById('new-name').value = "";
+        fileInput.value = "";
+      } catch (e) {
+        console.error(e);
+        alert("Error al subir imagen");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "GUARDAR Y SUBIR";
+      }
     }
 
     function renderServices() {
@@ -225,7 +241,7 @@
     }
 
     function setBarber(n, p) {
-      if(!barberStatus[n]) return alert("🚨 " + n + " está libre hoy. Por favor elige al otro barbero disponible.");
+      if(!barberStatus[n]) return alert("🚨 " + n + " está libre hoy.");
       selectedBarber = {name:n, phone:p};
       document.querySelectorAll('#barber-selectors .nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('b-' + n).classList.add('active');
@@ -263,7 +279,7 @@
       const list = document.getElementById('agenda-list'), hoy = new Date().toISOString().split("T")[0];
       document.getElementById('agenda-date').innerText = hoy;
       const citas = Object.keys(allReservas).map(k => ({...allReservas[k], k})).filter(r => (user.role === 'admin' || r.barbero === user.name) && r.fecha === hoy && r.status !== 'eliminado');
-      list.innerHTML = citas.map(r => {
+      list.innerHTML = citas.sort((a,b)=> a.hora.localeCompare(b.hora)).map(r => {
         const cData = Object.values(allCortes).find(c => c.name === r.corte);
         return `
         <div class="item-card">
@@ -271,8 +287,8 @@
           <div style="flex:1"><strong>${format12h(r.hora)}</strong> - ${r.cliente}</div>
           <div style="display:flex; gap:8px;">
             <a class="btn-wa" onclick="window.open('https://wa.me/${r.phone.replace(/\D/g,'')}?text=Hola *${r.cliente}*, te recordamos tu cita hoy a las ${format12h(r.hora)}.')">📲</a>
-            <button onclick="db.ref('reservas/${r.k}').update({status:'confirmada'})" style="border:none; background:green; color:white; border-radius:5px;">✅</button>
-            <button onclick="db.ref('reservas/${r.k}').update({status:'eliminado'})" style="border:none; background:red; color:white; border-radius:5px;">X</button>
+            <button onclick="db.ref('reservas/${r.k}').update({status:'confirmada'})" style="border:none; background:green; color:white; border-radius:5px; padding:5px 10px; cursor:pointer;">✅</button>
+            <button onclick="db.ref('reservas/${r.k}').update({status:'eliminado'})" style="border:none; background:red; color:white; border-radius:5px; padding:5px 10px; cursor:pointer;">X</button>
           </div>
         </div>`;
       }).join('') || "Sin citas para hoy.";
@@ -302,9 +318,9 @@
       grid.innerHTML = ""; if(!d || !selectedBarber.name) return;
       const ahora = new Date(), hoy = ahora.toISOString().split('T')[0];
       const ocupadas = Object.values(allReservas).filter(r => r.barbero === selectedBarber.name && r.fecha === d && r.status !== 'eliminado').map(r => r.hora);
-      for(let h = 8; h <= 15; h++) {
+      for(let h = 8; h <= 17; h++) {
         for(let m of ['00', '45']) {
-          if(h === 15 && m === '45') continue;
+          if(h === 17 && m === '45') continue;
           let t24 = (h < 10 ? '0'+h : h) + ':' + m;
           if(ocupadas.includes(t24)) continue;
           if(d === hoy && (h < ahora.getHours() || (h === ahora.getHours() && Number(m) <= ahora.getMinutes()))) continue;
@@ -335,11 +351,16 @@
         <div class="item-card">
           <img src="${allCortes[k].img}" class="img-prev">
           <span>${allCortes[k].name}</span>
-          <button onclick="db.ref('cortes/${k}').remove()" style="background:red; color:white; border:none; padding:5px; border-radius:5px;">Borrar</button>
+          <button onclick="if(confirm('¿Borrar?')) db.ref('cortes/${k}').remove()" style="background:red; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">Borrar</button>
         </div>`).join('');
     }
 
-    function showScreen(scr, e) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-btns .nav-btn').forEach(b => b.classList.remove('active')); document.getElementById('screen-' + scr).classList.add('active'); e.target.classList.add('active'); }
+    function showScreen(scr, e) { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        document.querySelectorAll('.nav-btns .nav-btn').forEach(b => b.classList.remove('active')); 
+        document.getElementById('screen-' + scr).classList.add('active'); 
+        e.target.classList.add('active'); 
+    }
     document.getElementById('res-date').min = new Date().toISOString().split("T")[0];
   </script>
 </body>
