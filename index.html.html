@@ -3,133 +3,130 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BROTHER BARBERSHOP | CRM PRO</title>
+  <title>BROTHER BARBERSHOP |</title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage-compat.js"></script>
   <style>
-    :root{
-      --bg:#0b0d10; --card:#0f1215; --muted:#9aa2a8;
-      --accent:#00b0ff; --accent-2:#00ff9f;
-      --glass: rgba(255,255,255,0.04); --radius:18px;
-    }
-    *{box-sizing:border-box; font-family: 'Inter', sans-serif; transition: 0.3s;}
-    body{ margin:0; background: var(--bg); color:#e6eef3; padding:15px; }
-    .wrap{ width:100%; max-width:1100px; margin: 0 auto; }
-
-    header{ display:flex; justify-content: space-between; align-items:center; padding:20px; background: var(--glass); border-radius: var(--radius); margin-bottom: 25px; border: 1px solid var(--glass); }
-    .accent-text { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-
-    .nav-btns { display: flex; gap: 10px; margin-bottom: 20px; display: none; }
-    .nav-btn { background: var(--glass); border: 1px solid var(--accent); color: var(--accent); padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; }
-    .nav-btn.active { background: var(--accent); color: #000; }
-
-    .screen { display: none; }
-    .screen.active { display: block; }
-
+    :root { --bg: #f4f4f4; --card: #ffffff; --text: #1a1a1a; --accent: #d32f2f; --dark: #000000; --wa: #25d366; --radius: 12px; }
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: 0.3s; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding: 15px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--dark); border-radius: var(--radius); margin-bottom: 25px; color: white; border-bottom: 4px solid var(--accent); }
+    .nav-btns { display: none; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding: 5px; }
+    .nav-btn { background: white; border: 1px solid var(--dark); padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+    .nav-btn.active { background: var(--dark); color: white; }
+    .screen { display: none; } .screen.active { display: block; }
     .main-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-    .card { background: var(--card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--glass); margin-bottom: 20px; }
-    .item-card { background: var(--glass); padding: 15px; border-radius: 12px; border-left: 4px solid var(--muted); margin-bottom: 10px; }
-    .confirmed { border-left-color: var(--accent-2) !important; }
-    .client-card { border-left-color: #ff9f00; }
-
-    .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; background: linear-gradient(90deg, var(--accent), var(--accent-2)); cursor: pointer; color: #000; margin-top: 10px; }
-    .promo-btn { background: #25d366; color: white; padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
-    .cancel-btn { background: #ff4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; margin-top: 8px; font-weight: bold; }
-
-    .barber-list { display: flex; gap: 10px; margin: 15px 0; }
-    .barber-item { flex: 1; background: var(--card); padding: 12px; border-radius: 10px; border: 1px solid var(--glass); cursor: pointer; text-align: center; font-weight: bold; }
-    .barber-item.selected { border-color: var(--accent); color: var(--accent); background: rgba(0, 176, 255, 0.1); }
+    .card { background: var(--card); padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #ddd; margin-bottom: 20px; }
+    .item-card { background: white; padding: 12px; border-radius: 10px; border-left: 5px solid var(--dark); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .img-prev { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; background: #eee; }
+    .time-slot { background: white; border: 1px solid #ddd; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .time-slot.active { background: var(--accent); color: white; border-color: var(--accent); }
     
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-    .service-card { background: var(--card); border-radius: 12px; border: 1px solid var(--glass); overflow: hidden; cursor: pointer; position: relative; }
+    /* MEJORA EN SERVICIOS */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
+    .service-card { background: white; border-radius: 12px; border: 1px solid #ddd; overflow: hidden; cursor: pointer; text-align: center; position: relative; }
     .service-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
-    .service-card.selected { border-color: var(--accent-2); box-shadow: 0 0 15px rgba(0, 255, 159, 0.2); }
-    .zoom-hint { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 4px; border-radius: 50%; font-size: 12px; z-index: 10; }
+    .service-card p { margin: 8px 0; font-size: 14px; }
+    .service-card.selected { border: 4px solid var(--accent); transform: scale(1.02); }
+    .zoom-hint { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white; padding: 4px; border-radius: 50%; font-size: 12px; }
 
-    #image-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 20000; align-items: center; justify-content: center; padding: 20px; }
-    #image-modal img { max-width: 100%; max-height: 85vh; border-radius: 10px; border: 2px solid var(--accent); }
+    /* MODAL PARA VER IMAGEN COMPLETA */
+    #modal-view { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
+    #modal-view img { max-width: 100%; max-height: 70vh; border-radius: 10px; border: 3px solid white; }
+    #modal-view h2 { color: white; margin: 15px 0; }
+    .modal-actions { display: flex; gap: 15px; width: 100%; max-width: 400px; }
 
-    #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .auth-card { background: var(--card); padding: 30px; border-radius: var(--radius); border: 1px solid var(--glass); width: 100%; max-width: 400px; }
-
-    input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass); background: rgba(255,255,255,0.05); color: white; margin-top: 8px; outline: none; }
-
+    input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 8px; }
+    .btn-wa { background: var(--wa); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .btn-wa:hover { transform: scale(1.1); }
     @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-  <div id="image-modal" onclick="this.style.display='none'">
-    <img id="img-full" src="">
+  <div id="modal-view">
+    <img id="modal-img" src="" alt="Vista previa">
+    <h2 id="modal-name-text"></h2>
+    <div class="modal-actions">
+      <button onclick="closeModal()" style="flex:1; padding:15px; border-radius:10px; border:none; background:#555; color:white; font-weight:bold;">CERRAR</button>
+      <button id="confirm-btn" style="flex:1; padding:15px; border-radius:10px; border:none; background:var(--accent); color:white; font-weight:bold;">ELEGIR ESTE</button>
+    </div>
   </div>
 
-  <div id="auth-overlay">
-    <div class="auth-card">
-      <h2 style="text-align:center;">BROTHER BARBERSHOP</h2>
+  <div id="auth-overlay" style="position:fixed; inset:0; background:var(--dark); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; padding:30px; border-radius:var(--radius); width:100%; max-width:400px; text-align:center;">
+      <h2 style="margin-bottom:20px;">BROTHER BARBERSHOP</h2>
       <input type="text" id="u-name" placeholder="Tu Nombre">
-      <input type="text" id="u-nick" placeholder="Tu Apodo (Opcional)">
-      <input type="password" id="u-pass" placeholder="Tu Teléfono (Ej: 503...)">
-      <button class="btn" onclick="handleLogin()">INGRESAR</button>
+      <input type="text" id="u-phone" placeholder="WhatsApp (Clientes)">
+      <input type="password" id="u-pass" placeholder="">
+      <button onclick="handleLogin()" style="width:100%; padding:15px; margin-top:15px; background:var(--dark); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACCEDER</button>
     </div>
   </div>
 
   <div class="wrap">
     <header>
-      <div><h1 style="margin:0; font-size:18px;" class="accent-text">BROTHER BARBERSHOP</h1><small id="user-display"></small></div>
-      <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); cursor:pointer;">Salir</button>
+      <div><h1 style="margin:0; font-size:18px;">Brother Barbershop</h1><small id="user-display"></small></div>
+      <button onclick="location.reload()" style="background:white; border:none; padding:5px 10px; border-radius:5px; font-weight:bold; cursor:pointer;">Salir</button>
     </header>
 
     <div class="nav-btns" id="nav-bar">
-      <button class="nav-btn active" onclick="showScreen('home', event)">INICIO</button>
-      <button class="nav-btn" onclick="showScreen('clients', event)">CLIENTES</button>
-      <button class="nav-btn" id="btn-admin-view" onclick="showScreen('admin', event)" style="display:none;">ADMIN</button>
+      <button class="nav-btn active" onclick="showScreen('home', event)">RESERVAR</button>
+      <button class="nav-btn" onclick="showScreen('agenda', event)" id="nav-agenda" style="display:none;">AGENDA</button>
+      <button class="nav-btn" onclick="showScreen('clients', event)" id="nav-crm" style="display:none;">CRM</button>
+      <button class="nav-btn" onclick="showScreen('admin', event)" id="nav-admin" style="display:none;">ADMIN</button>
     </div>
 
     <div id="screen-home" class="screen active">
+      <div id="mis-citas-container"></div>
       <div class="main-grid">
         <div class="left">
-          <div id="user-appointments" style="margin-bottom: 25px;"></div>
-          <div id="agenda-section" style="display:none;">
-            <h3>AGENDA DE HOY</h3>
-            <div id="agenda-list"></div>
+          <h3>1. Elige Barbero</h3>
+          <div style="display:flex; gap:10px; margin-bottom:20px;" id="barber-selectors">
+            <div class="nav-btn" id="b-Chino" style="flex:1; text-align:center;" onclick="setBarber('Chino', '50377543123')">CHINO</div>
+            <div class="nav-btn" id="b-Francisco" style="flex:1; text-align:center;" onclick="setBarber('Francisco', '50375947426')">FRANCISCO</div>
           </div>
-          <h3>1. Elegí Barbero</h3>
-          <div class="barber-list">
-            <div class="barber-item" id="b-Chino" onclick="setBarber('Chino', '50377543123')">CHINO</div>
-            <div class="barber-item" id="b-Francisco" onclick="setBarber('Francisco', '50375947426')">FRANCISCO</div>
-          </div>
-          <h3>2. Elegí Estilo</h3>
+          <h3>2. Elige Estilo (Click para ampliar)</h3>
           <div class="services-grid" id="services-render"></div>
         </div>
         <aside>
           <div class="card">
-            <h3 style="margin:0;">Agendá</h3>
+            <h3>Fecha y Hora</h3>
+            <div id="admin-manual-inputs" style="display:none; background:#eee; padding:10px; border-radius:8px; margin-bottom:10px;">
+              <input type="text" id="manual-name" placeholder="Nombre Cliente">
+              <input type="text" id="manual-phone" placeholder="WhatsApp">
+            </div>
             <input type="date" id="res-date" onchange="renderTimeSlots()">
             <div id="time-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;"></div>
-            <textarea id="res-notes" rows="2" placeholder="Notas..."></textarea>
-            <button class="btn" onclick="checkAndSend()">WHATSAPP</button>
+            <button class="nav-btn" style="width:100%; margin-top:15px; background:var(--dark); color:white;" onclick="checkAndSend()">AGENDAR CITA</button>
           </div>
         </aside>
       </div>
     </div>
 
+    <div id="screen-agenda" class="screen">
+      <div class="card"><h3>Hoy: <span id="agenda-date"></span></h3><div id="agenda-list"></div></div>
+    </div>
+
     <div id="screen-clients" class="screen">
-      <div class="card">
-        <h3>MIS CLIENTES (POR APODO)</h3>
-        <div id="crm-list"></div>
-      </div>
+      <div class="card"><h3>CLIENTES PARA CONTACTAR</h3><div id="crm-list"></div></div>
     </div>
 
     <div id="screen-admin" class="screen">
       <div class="card">
-        <h3>GESTIÓN DE ESTILOS</h3>
-        <input type="file" id="new-img-file" accept="image/*">
-        <input type="text" id="new-img-name" placeholder="Nombre">
-        <input type="number" id="new-img-price" placeholder="Precio $">
-        <button class="btn" onclick="addNewService()">PUBLICAR</button>
-        <div id="editor-list" style="margin-top:20px; display:grid; gap:8px;"></div>
+        <h3>Disponibilidad de Barberos</h3>
+        <div style="display:flex; gap:10px;">
+          <button class="nav-btn" onclick="toggleBarber('Chino')" id="t-Chino">CHINO</button>
+          <button class="nav-btn" onclick="toggleBarber('Francisco')" id="t-Francisco">FRANCISCO</button>
+        </div>
       </div>
+      <div class="card">
+        <h3>Subir Nuevo Corte (Desde Celular)</h3>
+        <input type="text" id="new-name" placeholder="Nombre del estilo">
+        <input type="file" id="new-file" accept="image/*">
+        <button class="nav-btn" style="width:100%; margin-top:10px; background:green; color:white;" onclick="uploadCorte()">GUARDAR Y SUBIR</button>
+      </div>
+      <div class="card"><h3>Gestionar Cortes</h3><div id="admin-list-cortes"></div></div>
     </div>
   </div>
 
@@ -139,196 +136,210 @@
       authDomain: "brotherbarbershop-72776.firebaseapp.com",
       projectId: "brotherbarbershop-72776",
       storageBucket: "brotherbarbershop-72776.firebasestorage.app",
-      databaseURL: "https://brotherbarbershop-72776-default-rtdb.firebaseio.com",
-      messagingSenderId: "905336909215",
-      appId: "1:905336909215:web:be04137cef98a69c7b21aa"
+      databaseURL: "https://brotherbarbershop-72776-default-rtdb.firebaseio.com"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const storage = firebase.storage();
 
-    let user = {}, selectedBarber = {}, selectedService = null, selectedTime = null, allReservas = {}, allCortes = {};
+    let user = {}, selectedBarber = {}, selectedService = null, selectedTime = null;
+    let allReservas = {}, allCortes = {}, barberStatus = { Chino: true, Francisco: true };
 
     function handleLogin() {
       const n = document.getElementById('u-name').value.trim();
-      const nick = document.getElementById('u-nick').value.trim();
-      const p = document.getElementById('u-pass').value.trim();
-      if(!n || !p) return alert("Nombre y Teléfono son obligatorios");
+      const p = document.getElementById('u-phone').value.trim();
+      const pass = document.getElementById('u-pass').value.trim();
+      if(!n) return alert("Ingresa nombre");
 
-      if(n.toLowerCase() === 'frank' && p === 'admin2026') {
-        user = { name: 'Frank', nick: 'Admin', role: 'admin' };
-        document.getElementById('btn-admin-view').style.display = 'block';
-      } else if(n.toLowerCase() === 'chino' && p === 'chino123') {
-        user = { name: 'Chino', nick: 'Chino', role: 'barber', phone: '50377543123' };
-      } else if(n.toLowerCase() === 'fran' && p === 'fran123') {
-        user = { name: 'Francisco', nick: 'Fran', role: 'barber', phone: '50375947426' };
-      } else {
-        user = { name: n, nick: nick || n, role: 'client', phone: p };
-      }
+      if(n.toLowerCase() === 'frank' && pass === 'admin2026') user = { name: 'Admin', role: 'admin' };
+      else if(n.toLowerCase() === 'chino' && pass === 'chino123') user = { name: 'Chino', role: 'barber', phone: '50377543123' };
+      else if(n.toLowerCase() === 'fran' && pass === 'fran123') user = { name: 'Francisco', role: 'barber', phone: '50375947426' };
+      else { if(!p) return alert("Ingresa WhatsApp"); user = { name: n, role: 'client', phone: p }; }
 
-      document.getElementById('auth-overlay').style.display = 'none';
-      document.getElementById('user-display').innerText = "Hola, " + user.nick;
-      
       if(user.role !== 'client') {
-        document.getElementById('nav-bar').style.display = 'flex';
-        document.getElementById('agenda-section').style.display = 'block';
+        document.getElementById('nav-agenda').style.display = 'block';
+        document.getElementById('nav-crm').style.display = 'block';
+        document.getElementById('admin-manual-inputs').style.display = 'block';
+        if(user.role === 'admin') document.getElementById('nav-admin').style.display = 'block';
       }
+      document.getElementById('auth-overlay').style.display = 'none';
+      document.getElementById('user-display').innerText = "Hola, " + user.name;
+      document.getElementById('nav-bar').style.display = 'flex';
       loadData();
     }
 
     function loadData() {
-      db.ref('cortes').on('value', s => { allCortes = s.val() || {}; renderServices(); renderEditor(); });
-      db.ref('reservas').on('value', s => { 
-        allReservas = s.val() || {}; 
-        renderAgenda(); 
-        renderCRM(); 
-        renderTimeSlots();
-        renderUserAppointments();
-      });
+      db.ref('cortes').on('value', s => { allCortes = s.val() || {}; renderServices(); renderAdminCortes(); });
+      db.ref('reservas').on('value', s => { allReservas = s.val() || {}; renderAll(); });
+      db.ref('barberos').on('value', s => { barberStatus = s.val() || { Chino: true, Francisco: true }; updateBarberUI(); });
     }
 
-    function showScreen(scr, e) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('screen-' + scr).classList.add('active');
-      e.target.classList.add('active');
+    function renderAll() { renderAgenda(); renderMisCitas(); renderTimeSlots(); renderCRM(); }
+
+    function format12h(t) {
+      let [h, m] = t.split(':');
+      return (h % 12 || 12) + ':' + m + (h >= 12 ? ' PM' : ' AM');
     }
 
-    function renderUserAppointments() {
-      if(user.role !== 'client') return;
-      const misCitas = Object.keys(allReservas).map(k => ({...allReservas[k], k}))
-        .filter(r => r.phone === user.phone && r.status !== 'cancelada')
-        .sort((a,b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
-
-      const container = document.getElementById('user-appointments');
-      container.innerHTML = misCitas.length > 0 ? '<h3>Mis Próximas Citas</h3>' + misCitas.map(r => `
-        <div class="item-card confirmed">
-          <strong>${r.fecha} - ${r.hora}</strong><br>
-          <small>Con ${r.barbero} | ${r.corte}</small><br>
-          <button class="cancel-btn" onclick="cancelarCita('${r.k}')">Cancelar ❌</button>
-        </div>`).join('') : '';
+    // --- FUNCIONES DEL MODAL ---
+    function openPreview(id, name, img) {
+        const modal = document.getElementById('modal-view');
+        document.getElementById('modal-img').src = img;
+        document.getElementById('modal-name-text').innerText = name;
+        document.getElementById('confirm-btn').onclick = () => {
+            selectService(id, name, img);
+            closeModal();
+        };
+        modal.style.display = 'flex';
     }
 
-    function cancelarCita(id) {
-      if(confirm("¿Cancelar cita?")) {
-        db.ref('reservas/' + id).update({ status: 'cancelada' });
-      }
+    function closeModal() {
+        document.getElementById('modal-view').style.display = 'none';
     }
 
-    function renderAgenda() {
-      if(user.role === 'client') return;
-      const list = document.getElementById('agenda-list'), hoy = new Date().toISOString().split("T")[0];
-      const barberName = user.role === 'admin' ? 'Chino' : user.name;
-      const hoyCitas = Object.keys(allReservas).map(k => ({...allReservas[k], k}))
-        .filter(r => r.barbero === barberName && r.fecha === hoy && r.status !== 'cancelada')
-        .sort((a,b) => a.hora.localeCompare(b.hora));
-
-      list.innerHTML = hoyCitas.map(r => `
-        <div class="item-card ${r.status==='confirmada'?'confirmed':''}">
-          <strong>${r.hora} - ${r.cliente} (${r.apodo || 'Sin apodo'})</strong><br><small>${r.corte}</small>
-        </div>`).join('') || "Sin citas activas hoy.";
+    function selectService(id, name, img) {
+        selectedService = {id, name, img};
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('svc-' + id).classList.add('selected');
     }
 
-    function renderCRM() {
-      const list = document.getElementById('crm-list');
-      if(!list) return;
-      const clis = {};
-      Object.values(allReservas).forEach(r => {
-        if(!clis[r.phone]) clis[r.phone] = { nombre: r.cliente, apodo: r.apodo || r.cliente, tel: r.phone, ultima: r.fecha, barbero: r.barbero };
-        else if(r.fecha > clis[r.phone].ultima) clis[r.phone].ultima = r.fecha;
-      });
-      let misClientes = Object.values(clis);
-      if(user.role === 'barber') misClientes = misClientes.filter(c => c.barbero === user.name);
-      list.innerHTML = misClientes.map(c => `
-        <div class="item-card client-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div><strong>${c.nombre} (${c.apodo})</strong><br><small>Vino el: ${c.ultima}</small></div>
-            <button class="promo-btn" onclick="enviarPromo('${c.tel}', '${c.apodo}')">Promo 📲</button>
-          </div>
-        </div>`).join('') || "No hay clientes.";
-    }
-
-    function enviarPromo(tel, nick) {
-      const msg = `¡Qué onda ${nick}! Te saluda *${user.name}* de Brother Barbershop. 💈 Ya hace falta el recorte de calidad. ¿Te aparto un cupo?`;
-      // Usamos el formato internacional limpio
-      window.open(`https://wa.me/${tel.replace(/\+/g, '')}?text=${msg}`, '_blank');
+    async function uploadCorte() {
+      const file = document.getElementById('new-file').files[0];
+      const name = document.getElementById('new-name').value;
+      if(!file || !name) return alert("Sube foto y pon nombre");
+      
+      const ref = storage.ref('cortes/' + Date.now() + "_" + file.name);
+      const snap = await ref.put(file);
+      const url = await snap.ref.getDownloadURL();
+      db.ref('cortes').push().set({ name, img: url });
+      alert("¡Estilo guardado!");
+      document.getElementById('new-name').value = "";
     }
 
     function renderServices() {
-      document.getElementById('services-render').innerHTML = Object.values(allCortes).map((s, i) => `
-        <div class="service-card" id="svc-${i}" onclick="selectService(${i}, '${s.name}')">
-          <div class="zoom-hint" onclick="event.stopPropagation(); openZoom('${s.img}')">🔍</div>
-          <img src="${s.img}">
-          <div style="padding:10px; font-size:12px;"><strong>${s.name}</strong><br>$${s.price}.00</div>
+      document.getElementById('services-render').innerHTML = Object.keys(allCortes).map(k => `
+        <div class="service-card" id="svc-${k}" onclick="openPreview('${k}','${allCortes[k].name}','${allCortes[k].img}')">
+          <div class="zoom-hint">🔍</div>
+          <img src="${allCortes[k].img}"><p><b>${allCortes[k].name}</b></p>
         </div>`).join('');
     }
 
-    function selectService(index, name) {
-      selectedService = { name };
-      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-      document.getElementById('svc-' + index).classList.add('selected');
-    }
-
     function setBarber(n, p) {
+      if(!barberStatus[n]) return alert("🚨 " + n + " está libre hoy. Por favor elige al otro barbero disponible.");
       selectedBarber = {name:n, phone:p};
-      document.querySelectorAll('.barber-item').forEach(b => b.classList.remove('selected'));
-      document.getElementById('b-' + n).classList.add('selected');
+      document.querySelectorAll('#barber-selectors .nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('b-' + n).classList.add('active');
       renderTimeSlots();
     }
 
-    function renderTimeSlots() {
-      const grid = document.getElementById('time-grid'), date = document.getElementById('res-date').value;
-      if(!date || !selectedBarber.name) return;
-      grid.innerHTML = "";
-      const hoy = new Date().toISOString().split("T")[0], ahora = new Date();
-      const ocupadas = Object.values(allReservas).filter(r => r.barbero === selectedBarber.name && r.fecha === date && r.status !== 'cancelada').map(r => r.hora);
-      
-      let temp = new Date(date + "T07:00:00");
-      while(temp < new Date(date + "T17:00:00")) {
-        const t = temp.toTimeString().substring(0,5);
-        if((date > hoy || temp > ahora) && !ocupadas.includes(t)) {
-          const btn = document.createElement('div');
-          btn.className = 'nav-btn'; btn.style.textAlign = 'center'; btn.innerText = t;
-          btn.onclick = (e) => { 
-            selectedTime = t; 
-            document.querySelectorAll('#time-grid .nav-btn').forEach(x => x.classList.remove('active'));
-            e.target.classList.add('active');
-          };
-          grid.appendChild(btn);
-        }
-        temp.setMinutes(temp.getMinutes() + 45);
-      }
+    function renderMisCitas() {
+      const container = document.getElementById('mis-citas-container'); if(user.role !== 'client') return;
+      const cita = Object.keys(allReservas).map(k => ({...allReservas[k], k})).find(r => r.phone === user.phone && r.status !== 'eliminado');
+      container.innerHTML = cita ? `
+        <div class="card" style="border: 2px solid var(--accent);">
+          <h3 style="color:var(--accent); margin:0;">Tu Cita Actual:</h3>
+          <p>${cita.fecha} a las ${format12h(cita.hora)} con ${cita.barbero}</p>
+          <button class="nav-btn" style="background:var(--accent); color:white; width:100%;" onclick="db.ref('reservas/${cita.k}').update({status:'eliminado'})">CANCELAR PARA REAGENDAR</button>
+        </div>` : "";
     }
 
     function checkAndSend() {
       const d = document.getElementById('res-date').value;
-      if(!selectedService || !selectedTime) return alert("Selecciona corte y hora");
-      const r = { barbero: selectedBarber.name, cliente: user.name, apodo: user.nick, phone: user.phone, corte: selectedService.name, fecha: d, hora: selectedTime, status: 'pendiente' };
+      if(!selectedService || !selectedTime || !d) return alert("Faltan datos de cita");
+      let fN = user.name, fP = user.phone, manual = (user.role !== 'client');
+      if(manual) { fN = document.getElementById('manual-name').value; fP = document.getElementById('manual-phone').value; }
+      if(!fN || !fP) return alert("Nombre y WhatsApp requeridos");
+
+      const r = { barbero: selectedBarber.name, cliente: fN, phone: fP, corte: selectedService.name, fecha: d, hora: selectedTime, status: 'pendiente', timestamp: Date.now() };
       db.ref('reservas').push().set(r).then(() => {
-        const m = `*CITA BROTHER BARBERSHOP*%0ABarbero: ${r.barbero}%0ACliente: ${r.cliente}%0AApodo: ${r.apodo}%0ACorte: ${r.corte}%0AFecha: ${d}%0AHora: ${selectedTime}`;
-        window.open(`https://wa.me/${selectedBarber.phone}?text=${m}`, '_blank');
+        const h12 = format12h(selectedTime);
+        const target = manual ? fP : selectedBarber.phone;
+        const msg = `💈 *BROTHER BARBERSHOP* 💈\n\nReserva confirmada:\n👤 *Cliente:* ${fN}\n✂️ *Corte:* ${selectedService.name}\n📅 *Fecha:* ${d}\n⏰ *Hora:* ${h12}\n💈 *Barbero:* ${selectedBarber.name}`;
+        window.open(`https://wa.me/${target.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
       });
     }
 
-    function openZoom(url) {
-      document.getElementById('img-full').src = url;
-      document.getElementById('image-modal').style.display = 'flex';
+    function renderAgenda() {
+      const list = document.getElementById('agenda-list'), hoy = new Date().toISOString().split("T")[0];
+      document.getElementById('agenda-date').innerText = hoy;
+      const citas = Object.keys(allReservas).map(k => ({...allReservas[k], k})).filter(r => (user.role === 'admin' || r.barbero === user.name) && r.fecha === hoy && r.status !== 'eliminado');
+      list.innerHTML = citas.map(r => {
+        const cData = Object.values(allCortes).find(c => c.name === r.corte);
+        return `
+        <div class="item-card">
+          <img src="${cData ? cData.img : ''}" class="img-prev">
+          <div style="flex:1"><strong>${format12h(r.hora)}</strong> - ${r.cliente}</div>
+          <div style="display:flex; gap:8px;">
+            <a class="btn-wa" onclick="window.open('https://wa.me/${r.phone.replace(/\D/g,'')}?text=Hola *${r.cliente}*, te recordamos tu cita hoy a las ${format12h(r.hora)}.')">📲</a>
+            <button onclick="db.ref('reservas/${r.k}').update({status:'confirmada'})" style="border:none; background:green; color:white; border-radius:5px;">✅</button>
+            <button onclick="db.ref('reservas/${r.k}').update({status:'eliminado'})" style="border:none; background:red; color:white; border-radius:5px;">X</button>
+          </div>
+        </div>`;
+      }).join('') || "Sin citas para hoy.";
     }
 
-    function renderEditor() {
-      const list = document.getElementById('editor-list');
-      if(!list) return;
-      list.innerHTML = Object.keys(allCortes).map(k => `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--glass); padding:10px; border-radius:8px;"><small>${allCortes[k].name}</small><button onclick="db.ref('cortes/${k}').remove()" style="color:#ff4444; background:none; border:none; cursor:pointer;">Borrar</button></div>`).join('');
+    function renderCRM() {
+      const div = document.getElementById('crm-list'); if(!div) return;
+      const clis = {};
+      Object.values(allReservas).forEach(r => {
+        if(user.role === 'admin' || r.barbero === user.name) {
+          if(!clis[r.phone] || r.timestamp > clis[r.phone].ts) {
+            const cData = Object.values(allCortes).find(c => c.name === r.corte);
+            clis[r.phone] = { n: r.cliente, p: r.phone, ts: r.timestamp, f: r.fecha, corte: r.corte, img: cData ? cData.img : '' };
+          }
+        }
+      });
+      div.innerHTML = Object.values(clis).map(c => `
+        <div class="item-card">
+          <img src="${c.img}" class="img-prev">
+          <div style="flex:1"><b>${c.n}</b><br><small>${c.corte} (${c.f})</small></div>
+          <a class="btn-wa" onclick="window.open('https://wa.me/${c.p.replace(/\D/g,'')}?text=Hola *${c.n}*, te saludamos de *Brother Barbershop*!')">📲</a>
+        </div>`).join('');
     }
 
-    function addNewService() {
-      const f = document.getElementById('new-img-file').files[0], n = document.getElementById('new-img-name').value, p = document.getElementById('new-img-price').value;
-      if(!f || !n) return;
-      const reader = new FileReader();
-      reader.onloadend = () => db.ref('cortes').push().set({ name:n, price:p, img: reader.result });
-      reader.readAsDataURL(f);
+    function renderTimeSlots() {
+      const grid = document.getElementById('time-grid'), d = document.getElementById('res-date').value;
+      grid.innerHTML = ""; if(!d || !selectedBarber.name) return;
+      const ahora = new Date(), hoy = ahora.toISOString().split('T')[0];
+      const ocupadas = Object.values(allReservas).filter(r => r.barbero === selectedBarber.name && r.fecha === d && r.status !== 'eliminado').map(r => r.hora);
+      for(let h = 8; h <= 15; h++) {
+        for(let m of ['00', '45']) {
+          if(h === 15 && m === '45') continue;
+          let t24 = (h < 10 ? '0'+h : h) + ':' + m;
+          if(ocupadas.includes(t24)) continue;
+          if(d === hoy && (h < ahora.getHours() || (h === ahora.getHours() && Number(m) <= ahora.getMinutes()))) continue;
+          let btn = document.createElement('div'); btn.className = 'time-slot'; btn.innerText = format12h(t24);
+          btn.onclick = (e) => { selectedTime = t24; document.querySelectorAll('.time-slot').forEach(x => x.classList.remove('active')); e.target.classList.add('active'); };
+          grid.appendChild(btn);
+        }
+      }
     }
 
+    function toggleBarber(b) { db.ref('barberos/' + b).set(!barberStatus[b]); }
+    function updateBarberUI() {
+      ['Chino', 'Francisco'].forEach(b => {
+        const btn = document.getElementById('t-' + b); if(btn) { 
+            btn.innerText = b + (barberStatus[b] ? ' (Activo)' : ' (Libre)'); 
+            btn.style.background = barberStatus[b] ? 'green' : 'gray'; 
+        }
+        const sel = document.getElementById('b-' + b); if(sel) { 
+            sel.style.opacity = barberStatus[b] ? '1' : '0.4'; 
+            sel.style.border = barberStatus[b] ? '' : '1px dashed red';
+        }
+      });
+    }
+
+    function renderAdminCortes() {
+      const div = document.getElementById('admin-list-cortes'); if(!div) return;
+      div.innerHTML = Object.keys(allCortes).map(k => `
+        <div class="item-card">
+          <img src="${allCortes[k].img}" class="img-prev">
+          <span>${allCortes[k].name}</span>
+          <button onclick="db.ref('cortes/${k}').remove()" style="background:red; color:white; border:none; padding:5px; border-radius:5px;">Borrar</button>
+        </div>`).join('');
+    }
+
+    function showScreen(scr, e) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-btns .nav-btn').forEach(b => b.classList.remove('active')); document.getElementById('screen-' + scr).classList.add('active'); e.target.classList.add('active'); }
     document.getElementById('res-date').min = new Date().toISOString().split("T")[0];
   </script>
 </body>
